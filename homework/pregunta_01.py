@@ -1,6 +1,11 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=line-too-long
 # flake8: noqa
+
+import os
+import zipfile
+import pandas as pd
+
 """
 Escriba el codigo que ejecute la accion solicitada en cada pregunta.
 """
@@ -71,3 +76,36 @@ def pregunta_01():
 
 
     """
+    def extract_zip(zip_path, extract_to):
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(extract_to)
+
+    def read_files_from_directory(directory):
+        data = []
+        for sentiment in ['negative', 'neutral', 'positive']:
+            sentiment_path = os.path.join(directory, sentiment)
+            for filename in os.listdir(sentiment_path):
+                if filename.endswith('.txt'):
+                    file_path = os.path.join(sentiment_path, filename)
+                    with open(file_path, 'r', encoding='utf-8') as file:
+                        phrase = file.read().strip()
+                        data.append({'phrase': phrase, 'target': sentiment})
+        return data
+
+    def save_to_csv(data, output_path):
+        df = pd.DataFrame(data)
+        df.to_csv(output_path, index=False)
+
+    zip_path = 'files/input.zip'
+    extract_to = '.'
+    extract_zip(zip_path, extract_to)
+
+    train_data = read_files_from_directory('input/train')
+    test_data = read_files_from_directory('input/test')
+
+    os.makedirs('files/output', exist_ok=True)
+    save_to_csv(train_data, 'files/output/train_dataset.csv')
+    save_to_csv(test_data, 'files/output/test_dataset.csv')
+
+if __name__ == "__main__":
+    pregunta_01()
